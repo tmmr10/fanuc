@@ -1,0 +1,9 @@
+IO-Status:  2021 wenn fehler beim READ !!
+            sonst IO-Status 0
+            2021 : "End of file for RAM disk device"
+
+Code IDs für ERROR[n]:
+
+	For example, 15018 is MOTN-018, which is "Position not reachable." The facility code is 15
+	and the error code is 018. Refer to the FANUC Robotics Error Code Manual for a complete
+	listing of error codes.

@@ -1,0 +1,230 @@
+PROGRAM gesture
+--%STACKSIZE = 4000
+%NOLOCKGROUP
+--%NOPAUSE=ERROR+COMMAND+TPENABLE
+--%ENVIRONMENT uif
+--%ENVIRONMENT sysdef
+--%ENVIRONMENT memo
+--%ENVIRONMENT kclop
+--%ENVIRONMENT bynam
+--%ENVIRONMENT fdev
+--%ENVIRONMENT flbt
+--%ENVIRONMENT REGOPE
+--%INCLUDE klevccdf
+--%INCLUDE klevkeys
+--%INCLUDE klevkmsk
+-------------------------------------------------------------------------------
+CONST
+	Version		= '1.0.0'	
+	--len_command	= 5             
+    
+    -- Funktion comands
+    SHUTDOWN    = 'shutdown_server'
+    SET_POS     = 'set_pos'
+    GET_POS     = 'get_pos'
+    FINISH      = 'exit'
+    
+    -- Answer Messages
+    ACK         = 'ack'
+    FAILURE     = 'fail_'
+    
+    -- Failure Reasons
+    OVERFLOW    = 'overflow'
+    NODATA      = 'noData'  
+    COORD       = 'coordinates'
+	UNEXPECTED  = 'unexpected'
+
+	-- States
+	S_START     = 0
+	S_ACCEPT    = 1
+	S_COORD     = 2
+	S_DISCON    = 900
+	S_STOP      = 999
+
+	-- Other
+	POS_REG   = 1
+    
+	
+VAR
+	socket_file 	: FILE	
+	tmp_msg     : STRING[254]		-- max string length
+	tmp_sub,
+    answer      : STRING[127]
+	--unfin_pos	: STRING[8]
+	global_state,
+	status,
+    i_o_status,
+	entry, 
+	len_msg, 
+	bytes_read,
+	prog_index,						-- only declarated, not to be set/manipulated
+	--unfin_pos_i,
+    num_read_pos,
+	global_pos	: INTEGER			
+	loop,
+	running,
+    fnc_pi_mov  : BOOLEAN		    -- defines if prog is in pos reading mode and awaits block of positions
+	xyzwpr_pos  : XYZWPR
+	
+-------------------------------------------------------------------------------
+---- Section ROUTINES :
+----					move_to_pr	    calls TP Program to move robot to positions in registers
+----					fill_pos_ary    reads message string and writes contents to pos registers
+-------------------------------------------------------------------------------
+
+ROUTINE g_cur_pos : XYZWPR
+VAR
+	pos : XYZWPR
+BEGIN
+	pos = CURPOS(0,0)		-- get current roboter position, for correct pos config data
+    pos.w = 30				-- static axis rotation values
+    pos.p = 0
+    pos.r = 180
+	RETURN(pos)
+END g_cur_pos
+
+ROUTINE parse_pos (msg : STRING) : XYZWPR
+VAR
+	pos : XYZWPR
+	coord_index,
+	index : INTEGER
+	cur_num : REAL
+	cur_slice : STRING[8]
+	cur_char : STRING[1]
+BEGIN
+	cur_char = ''
+	cur_slice = ''
+	coord_index = 0
+	pos = g_cur_pos
+	FOR index = 1 TO STR_LEN(msg) DO
+		cur_char = SUB_STR(msg, index, 1)
+		
+		IF (cur_char = '|') OR (cur_char = ';') OR (cur_char = ' ') THEN
+			coord_index = coord_index + 1
+			CNV_STR_REAL(cur_slice, cur_num)
+			SELECT coord_index OF
+				CASE (1) :
+					WRITE('setting x to ', cur_slice, cr)
+					pos.x = cur_num
+				CASE (2) :
+					WRITE('setting y to ', cur_slice, cr)
+					pos.y = cur_num
+				CASE (3) :
+					WRITE('setting z to ', cur_slice, cr)
+					pos.z = cur_num
+				ELSE :
+					WRITE('unexpected msg', cr)
+			ENDSELECT
+			cur_slice = ''
+		ELSE
+			cur_slice = cur_slice + cur_char
+		ENDIF
+	ENDFOR
+
+	RETURN(pos)
+
+END parse_pos
+
+ROUTINE proc_command (msg : STRING) : STRING
+VAR
+	pos : XYZWPR
+BEGIN
+	IF msg = SHUTDOWN THEN
+		global_state = S_STOP
+		RETURN(ACK)
+	ENDIF
+
+	IF msg = FINISH THEN
+		global_state = S_DISCON
+		RETURN(ACK)
+	ENDIF
+
+	SELECT global_state OF
+		CASE (S_ACCEPT) :
+			IF msg = SET_POS THEN
+				global_state = S_COORD
+				RETURN(ACK)
+			ENDIF
+			IF msg = GET_POS THEN
+				pos = g_cur_pos
+				RETURN('undefined')
+			ENDIF
+			RETURN(FAILURE + UNEXPECTED)
+		CASE (S_COORD) :
+			WRITE('Writing position to register...', cr)
+			pos = parse_pos(msg)
+			SET_POS_REG(POS_REG, pos, status)
+			global_state = S_ACCEPT
+			RETURN(ACK)
+		ELSE :
+			RETURN(FAILURE + UNEXPECTED)
+	ENDSELECT
+
+END proc_command
+-------------------------------------------------------------------------------
+---- Section Main Program
+----					
+-------------------------------------------------------------------------------
+BEGIN
+	WRITE ('Server start v', Version, cr)
+	running = TRUE
+    global_state = S_START
+	WHILE (global_state <> S_STOP) DO
+		SET_FILE_ATR(socket_file, ATR_IA)
+		-- set the server port before doing a connect
+		SET_VAR(entry, '*SYSTEM*','$HOSTS_CFG[3].$SERVER_PORT',59002,status)
+		MSG_CONNECT('S3:',status)
+		WRITE('Connect Status = ',status,CR)
+		IF status = 0 THEN
+			-- Open S3:
+			OPEN FILE socket_file ('rw','S3:')						-- associate file variable to communication port
+			status = IO_STATUS(socket_file)			
+			--WRITE ('Open File status : ',status,cr)
+			IF status = 0 THEN
+				global_state = S_ACCEPT
+				WHILE (global_state <> S_STOP) AND (global_state <> S_DISCON) DO
+					BYTES_AHEAD(socket_file, len_msg, status)		-- status = 0 -> file/msg is readable
+					
+					IF status <> 0 THEN
+						--WRITE('Reading File failed..',cr)				
+						IF status = 67212 THEN
+							global_state = S_STOP
+						ENDIF
+					ELSE
+						IF len_msg = 0 THEN
+						ELSE
+                            IF len_msg > 127 THEN
+                                answer = FAILURE + OVERFLOW
+                                WRITE socket_file(answer ::STR_LEN(answer))
+                                WRITE ('To much Input to read : '+ answer, cr)
+							ELSE
+								bytes_read = len_msg
+							
+                                READ socket_file (tmp_msg ::bytes_read)
+                                status = IO_STATUS(socket_file)      
+                                WRITE('Bytes : ', len_msg, 'status : ', status, cr,' Msg : ', tmp_msg, CR)
+
+                                IF status = 0 THEN
+                                    
+                                    --------------------------
+                                    -- Message read successfully
+                                    --------------------------
+									answer = proc_command(tmp_msg)
+									WRITE socket_file(answer ::STR_LEN(answer)) 
+                                ENDIF
+                            ENDIF
+						ENDIF
+					ENDIF
+				ENDWHILE
+				CLOSE FILE socket_file
+			ENDIF
+
+			MSG_DISCO('S3:',status)
+            WRITE('Disconnecting..',cr)
+		ELSE
+			MSG_DISCO('S3:',status)
+			WRITE('Disconnecting..',cr)
+		ENDIF
+	ENDWHILE
+END gesture
+-- End of programm

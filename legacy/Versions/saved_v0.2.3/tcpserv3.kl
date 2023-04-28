@@ -1,0 +1,122 @@
+-- This material is the joint property of Fanuc Robotics Corporation and
+-- FANUC LTD Japan, and must be returned to either Fanuc Robotics
+-- Corporation or FANUC LTD Japan immediately upon request. This material
+-- and the information illustrated or contained herein may not be
+-- reproduced, copied, used, or transmitted in whole or in part in any way
+-- without the prior written consent of both Fanuc Robotics and FANUC.
+--
+-- All Rights Reserved
+-- Copyright (C) 2000
+-- Fanuc Robotics Corporation
+-- FANUC LTD Japan
+-- 		Karel is a registered trademark of
+-- 		Fanuc Robotics Corporation
+-- +
+-- Program: tcpserv3.kl - Program for TCP Messaging
+--
+-- Description:
+--
+-- This program serves as an example on how to use TCP messaging and write
+-- a server Karel program.
+--
+-- Authors: Fanuc Robotics Corporation
+-- 		3900 West Hamlin
+-- 		Rochester Hills, MI 48309
+--
+-- Modification history:
+--
+
+-------------------------------------------------------------------------------
+
+PROGRAM tcpserv3
+%STACKSIZE = 4000
+%NOLOCKGROUP
+%NOPAUSE=ERROR+COMMAND+TPENABLE
+%ENVIRONMENT uif
+%ENVIRONMENT sysdef
+%ENVIRONMENT memo
+%ENVIRONMENT kclop
+%ENVIRONMENT bynam
+%ENVIRONMENT fdev
+%ENVIRONMENT flbt
+%INCLUDE klevccdf
+%INCLUDE klevkeys
+%INCLUDE klevkmsk
+
+-------------------------------------------------------------------------------
+
+VAR
+	file_var : FILE
+	tmp_int : INTEGER
+	tmp_int1 : INTEGER
+	tmp_str : STRING[128]
+	tmp_str1 : STRING[128]
+	status : INTEGER
+	entry : INTEGER
+	length : INTEGER
+	loop : BOOLEAN
+	running : BOOLEAN
+	msg_recieved : BOOLEAN
+	Version : String[128]
+-------------------------------------------------------------------------------
+
+BEGIN
+	Version = '0.2.3'
+	WRITE ('Server start v', Version, cr)
+	running = TRUE	
+	WHILE running DO
+		msg_recieved = FALSE
+		SET_FILE_ATR(file_var, ATR_IA)
+		-- set the server port before doing a connect
+		SET_VAR(entry, '*SYSTEM*','$HOSTS_CFG[3].$SERVER_PORT',59002,status)
+		MSG_CONNECT('S3:',status)
+		WRITE('Connect Status = ',status,cr)
+		IF status = 0 THEN
+			-- Open S3:
+			--WRITE ('Opening',cr)
+			--WHILE TRUE DO
+				OPEN FILE file_var ('rw','S3:')
+				status = IO_STATUS(file_var)
+				WRITE ('Open File status: ',status,cr)
+				IF status = 0 THEN
+					-- write an integer
+					loop = TRUE
+					WHILE loop = TRUE DO
+						--WRITE('Reading',cr)
+						-- Read 10 bytes
+						BYTES_AHEAD(file_var, length, status)
+						WRITE('Bytes available to read:', length,' status:', status, cr)					
+						IF status <> 0 THEN
+							--WRITE('Reading File failed..',cr)
+							loop = FALSE					
+						ELSE
+							IF length = 0 THEN
+								--WRITE('No bytes to read..',cr)
+								loop = FALSE
+							ELSE
+								msg_recieved = TRUE
+								READ file_var (tmp_str::length)
+								status = IO_STATUS(file_var)
+								WRITE ('Nachricht:', tmp_str::length, cr)
+								IF tmp_str = 'close' THEN
+									loop = FALSE
+									running = FALSE
+								ENDIF
+							ENDIF
+						ENDIF
+						IF msg_recieved = FALSE THEN
+							loop = TRUE
+						ENDIF
+						delay 700
+					ENDWHILE
+					CLOSE FILE file_var
+				ENDIF
+			--ENDWHILE
+			WRITE('Disconnecting..',cr)
+			MSG_DISCO('S3:',status)
+		ELSE
+			MSG_DISCO('S3:',status)
+			WRITE('Disconnecting..',cr)
+		ENDIF
+	ENDWHILE
+END tcpserv3

@@ -1,0 +1,92 @@
+PROGRAM tcpserv3
+%STACKSIZE = 4000
+%NOLOCKGROUP
+%NOPAUSE=ERROR+COMMAND+TPENABLE
+%ENVIRONMENT uif
+%ENVIRONMENT sysdef
+%ENVIRONMENT memo
+%ENVIRONMENT kclop
+%ENVIRONMENT bynam
+%ENVIRONMENT fdev
+%ENVIRONMENT flbt
+%INCLUDE klevccdf
+%INCLUDE klevkeys
+%INCLUDE klevkmsk
+
+-------------------------------------------------------------------------------
+
+VAR
+	file_var : FILE
+	tmp_int : INTEGER
+	tmp_int1 : INTEGER
+	tmp_str : STRING[128]
+	tmp_str1 : STRING[128]
+	status : INTEGER
+	entry : INTEGER
+	length : INTEGER
+	loop : BOOLEAN
+	running : BOOLEAN
+	--msg_recieved : BOOLEAN
+	Version : String[128]
+-------------------------------------------------------------------------------
+
+BEGIN
+	Version = '0.3.0'
+	WRITE ('Server start v', Version, cr)
+	running = TRUE	
+	WHILE running DO
+		SET_FILE_ATR(file_var, ATR_IA)
+		-- set the server port before doing a connect
+		SET_VAR(entry, '*SYSTEM*','$HOSTS_CFG[3].$SERVER_PORT',59002,status)
+		MSG_CONNECT('S3:',status)
+		WRITE('Connect Status = ',status,cr)
+		IF status = 0 THEN
+			-- Open S3:
+			OPEN FILE file_var ('rw','S3:')
+			status = IO_STATUS(file_var)
+			WRITE ('Open File status: ',status,cr)
+			IF status = 0 THEN
+				loop = TRUE
+				WHILE loop = TRUE DO
+					BYTES_AHEAD(file_var, length, status)	
+					
+					IF status <> 0 THEN
+						--WRITE('Reading File failed..',cr)				
+						IF status = 67212 THEN
+							loop = FALSE
+						ENDIF
+					ELSE
+						IF length = 0 THEN
+							--WRITE('No bytes to read..',cr)
+						ELSE
+							--Verarbeitung der Übergabe
+							WRITE('Bytes available to read:', length,' status:', status, cr)
+							READ file_var (tmp_str::length)
+							status = IO_STATUS(file_var)
+							WRITE ('Nachricht:', tmp_str::length, cr)
+							IF tmp_str = 'close' THEN
+								loop = FALSE
+								running = FALSE
+							ENDIF
+							--SELECT tmp_str OF
+							--	CASE('close'):
+							--		loop = FALSE
+							--		running = FALSE
+							--	CASE('move'):
+							--		--use TP-Program
+							--ENDSELECT
+						ENDIF
+					ENDIF
+					delay 700
+				ENDWHILE
+				CLOSE FILE file_var
+			ENDIF
+
+			WRITE('Disconnecting..',cr)
+			MSG_DISCO('S3:',status)
+		ELSE
+			MSG_DISCO('S3:',status)
+			WRITE('Disconnecting..',cr)
+		ENDIF
+	ENDWHILE
+END tcpserv3
