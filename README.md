@@ -11,3 +11,9 @@
 
 ### Python
 - Gestensteuerung
+
+
+### Notes
+Known Errors/Problems:
+
+For loop ist nicht unendlich
