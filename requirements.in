@@ -1,0 +1,7 @@
+cvzone
+mediapipe
+pip-tools
+
+# Installietrt von cvzone
+opencv-python
+numpy
