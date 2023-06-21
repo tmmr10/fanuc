@@ -1,6 +1,7 @@
 PROGRAM gesture
 --%STACKSIZE = 4000
 %NOLOCKGROUP
+%ALPHABETIZE
 --%NOPAUSE=ERROR+COMMAND+TPENABLE
 --%ENVIRONMENT uif
 --%ENVIRONMENT sysdef
@@ -15,7 +16,7 @@ PROGRAM gesture
 --%INCLUDE klevkmsk
 -------------------------------------------------------------------------------
 CONST
-	Version		= '1.0.0'	
+	Version		= '1.1.0'	
 	--len_command	= 5             
     
     -- Funktion comands
@@ -77,11 +78,34 @@ VAR
 	pos : XYZWPR
 BEGIN
 	pos = CURPOS(0,0)		-- get current roboter position, for correct pos config data
-    pos.w = 30				-- static axis rotation values
-    pos.p = 0
-    pos.r = 180
 	RETURN(pos)
 END g_cur_pos
+
+ROUTINE pos_2_str (pos : XYZWPR) : STRING
+VAR
+	tmp: STRING[24]
+	res : STRING[127]
+BEGIN
+	CNV_REAL_STR(pos.x, 1, 4, tmp)
+	res =  tmp + '|'
+	CNV_REAL_STR(pos.y, 1, 4, tmp)
+	res = res + tmp + '|'
+	CNV_REAL_STR(pos.z, 1, 4, tmp)
+	res = res + tmp
+	RETURN(res)
+END pos_2_str
+
+ROUTINE check_pos(pos: XYZWPR) : BOOLEAN
+VAR
+	status : INTEGER
+BEGIN
+	CHECK_EPOS(pos, $UFRAME, $UTOOL, status)
+	IF status = 0 THEN
+		RETURN(TRUE)
+	ELSE
+		RETURN(FALSE)
+	ENDIF
+END check_pos
 
 ROUTINE parse_pos (msg : STRING) : XYZWPR
 VAR
@@ -96,6 +120,9 @@ BEGIN
 	cur_slice = ''
 	coord_index = 0
 	pos = g_cur_pos
+	pos.w = 30				-- static axis rotation values
+    pos.p = 0
+    pos.r = 180
 	FOR index = 1 TO STR_LEN(msg) DO
 		cur_char = SUB_STR(msg, index, 1)
 		
@@ -147,13 +174,15 @@ BEGIN
 			ENDIF
 			IF msg = GET_POS THEN
 				pos = g_cur_pos
-				RETURN('undefined')
+				RETURN(pos_2_str(pos))
 			ENDIF
 			RETURN(FAILURE + UNEXPECTED)
 		CASE (S_COORD) :
 			WRITE('Writing position to register...', cr)
 			pos = parse_pos(msg)
-			SET_POS_REG(POS_REG, pos, status)
+			IF check_pos(pos) THEN
+				SET_POS_REG(POS_REG, pos, status)
+			ENDIF
 			global_state = S_ACCEPT
 			RETURN(ACK)
 		ELSE :
@@ -166,6 +195,7 @@ END proc_command
 ----					
 -------------------------------------------------------------------------------
 BEGIN
+	$UFRAME = $MNUFRAME[1,2]
 	WRITE ('Server start v', Version, cr)
 	running = TRUE
     global_state = S_START
