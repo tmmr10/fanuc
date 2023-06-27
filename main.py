@@ -4,12 +4,13 @@ from gesture.detector import Detector
 
 HOST_ADDR="10.215.255.151"
 TCP_PORT=59002
+
 margin = 100
 
-target_x_min = -120
-target_x_max = 120
-target_y_min = -45
-target_y_max = 52
+target_x_min = -119
+target_x_max = 119
+target_y_min = -44
+target_y_max = 51
 
 class RobotDetector(Detector):
     def __init__(self, communicator):
@@ -18,7 +19,6 @@ class RobotDetector(Detector):
     
     def one_index_finger_up(self, hand):
         lmList = hand["lmList"]
-        indexFinger = lmList[8][0], lmList[8][1], lmList[8][2]
         index_finger_x = lmList[8][0]
         index_finger_y = lmList[8][1]
         index_finger_z = lmList[8][2]
@@ -34,7 +34,7 @@ class RobotDetector(Detector):
         print( f"x : {mapped_x} , y: {mapped_y}, z:{zVal}")
         zVal=-22
         #mapped_x=50
-        data= self.communicator.send_position(mapped_x, zVal, mapped_y)
+        self.communicator.send_position(mapped_x, zVal, mapped_y)
         #print(data)
         print("one up")
         time.sleep(0.05)
@@ -55,10 +55,10 @@ class RobotDetector(Detector):
 def main():
     communicator= Communicator(HOST_ADDR, TCP_PORT)
     communicator.connect_to_socket()
-    #robot_detector= RobotDetector(communicator)
+    robot_detector= RobotDetector(communicator)
     try:
-        print(communicator.get_position())
-        #robot_detector.run()
+        #print(communicator.get_position())
+        robot_detector.run()
 
     finally:
         print("none")
@@ -70,7 +70,9 @@ def main1():
     try:
         #communicator.send_position(-105, 22, -22)
         #communicator.send_position(119, 22, -22)
-        communicator.send_position(65, -96, -22)
+        while True:
+            pos= communicator.send_position(65, -96, -22)
+            print(pos)
         print(communicator.get_position())
     finally:
         

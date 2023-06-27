@@ -29,10 +29,18 @@ class Communicator:
                     raise Exception(e) from e
                 time.sleep(1)
         
-    def send_data(self, data: str):
-        self.sock.send(data.encode())
-        return self.sock.recv(BUFFER_SIZE)
-                
+    def send_data(self, data: str, timeout=2):
+        self.sock.settimeout(timeout)  # Setze einen Timeout von 5 Sekunden
+        try:
+            self.sock.send(data.encode())
+            response = self.sock.recv(BUFFER_SIZE)
+            return response
+        except socket.timeout:
+            print("Timeout beim Senden von Daten.")
+        except socket.error as e:
+            print("Fehler beim Senden von Daten:", e)
+        return None
+
     def close_connection(self):
         val= self.send_data("exit")
         print("Closed Connection. Recieved: ", val)
