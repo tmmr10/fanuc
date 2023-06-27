@@ -17,6 +17,8 @@ target_y_max = 120
 class Detector:
     def __init__(self):
         cap = cv2.VideoCapture(0)
+        # For mac we had to use different Camera Device
+        #cap = cv2.VideoCapture(1)
         print("Video Captured")
         cap.set(3, WIDTH)
         cap.set(4, HEIGHT)
@@ -64,7 +66,7 @@ class Detector:
         except Exception as e:
             print("An error occured while detecting hand gesture.", e)
             print("Press q to end programm.")
-            print("Retry...(Wait for 5 seconds)")
+            print("Error...retry...(Wait for 5 seconds)")
             time.sleep(5)
             self._detect_gesture()
 
