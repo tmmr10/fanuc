@@ -57,7 +57,5 @@ class Communicator:
         return data
     
     def get_position(self):
-        print("Get POS")
-        data= self.send_data("get_pos")
-        return data
+        return self.send_data("get_pos")
         

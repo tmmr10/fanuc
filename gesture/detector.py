@@ -53,15 +53,21 @@ class Detector:
 
     def _detect_gesture(self):
         self.is_running = True
-
-        while self.is_running:
-            with self.hands_lock:
-                hands_copy = copy.deepcopy(self.hands)
-            if hands_copy:
-                if len(hands_copy) == 1:
-                    self.one_hand_detection(hands_copy)
-                elif len(hands_copy) == 2:
-                    self.two_hand_detection(hands_copy)
+        try:            
+            while self.is_running:
+                with self.hands_lock:
+                    hands_copy = copy.deepcopy(self.hands)
+                if hands_copy:
+                    if len(hands_copy) == 1:
+                        self.one_hand_detection(hands_copy)
+                    elif len(hands_copy) == 2:
+                        self.two_hand_detection(hands_copy)
+        except Exception as e:
+            print("An error occured while detecting hand gesture.", e)
+            print("Press q to end programm.")
+            print("Retry...(Wait for 5 seconds)")
+            time.sleep(5)
+            self._detect_gesture()
 
     def one_hand_detection(self, hands_copy):
         # Get first hand (only one activated)
