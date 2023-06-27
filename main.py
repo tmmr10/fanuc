@@ -9,18 +9,18 @@ home_position=(65, -96, -22)
 # margin is necessary because the detection at the screen edge does not work well
 margin = 100
 
-target_y_min = -119
+target_y_min = -115
 target_y_max = 119
 target_z_min = -44
 target_z_max = 51
 
 
 # Ungefähre z erkennung von bild( ist abhängig von Kamera)
-z_detect_min =-240
+z_detect_min =-150
 z_detect_max= 0
 
 target_x_min=-146
-target_x_max= 50
+target_x_max= 0
 
 class RobotDetector(Detector):
     def __init__(self, communicator):
@@ -43,19 +43,14 @@ class RobotDetector(Detector):
         
         normalized_z = (index_finger_z - z_detect_min) / (z_detect_max - z_detect_min)
         zVal = int(min(target_x_max, max(target_x_min, target_x_min + (target_x_max - target_x_min) * normalized_z)))
-        #print(
-        #   f"x: {lmList[8][0]}, y: {lmList[8][1]}, z: {lmList[8][2]} \t\t -> \t\t x:{mapped_x}, y: {mapped_y}, z: {zVal}")
-        #print( f"x : {mapped_x} , y: {mapped_y}, z:{zVal}")
-        #mapped_x=50
-        print(f"Umapped: {index_finger_z}. Mapped: {zVal}")
+        print( f"mapped x : {mapped_x} , mapped y: {mapped_y},z: {index_finger_z} mapped z:{zVal}")
+
         self.communicator.send_position(mapped_x, zVal, mapped_y)
-        #print(data)
-        #print("one up")
         time.sleep(0.05)
 
     def two_index_fingers_up(self, hand1, hand2):
         print("both_up")
-        #time.sleep(2)
+        time.sleep(1)
     
     def two_all_fingers_down(self, hand1, hand2):
         print("Go to home position")
@@ -102,7 +97,6 @@ def main1():
         while True:
             pos= communicator.get_position()
             print(pos)
-        print(communicator.get_position())
     finally:
         
         communicator.close_connection()
@@ -113,4 +107,3 @@ if __name__ == "__main__":
 
 
 # -40 29 -20;
-# TODO: Fixen, wenn er kein ack zurückbekommt, soll quit trotzdem die session killen

@@ -51,9 +51,9 @@ class Communicator:
         y= round(y, decimal_place)
         z= round(z, decimal_place)
         data= self.send_data("set_pos")
-        print("Data set_pos. Recieved", data)
+        #print("Data set_pos. Recieved", data)
         data= self.send_data(f"{x} {y} {z};")
-        print("Data send coords. Recieved", data)
+        #print("Data send coords. Recieved", data)
         return data
     
     def get_position(self):
