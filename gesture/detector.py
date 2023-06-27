@@ -84,8 +84,6 @@ class Detector:
         # Get the first hand (only one activated)
         hand = hands_copy[0]
         fingers = self.detector.fingersUp(hand)
-        # print(fingers)
-        # time.sleep(1)
         if fingers == [1, 1, 0, 0, 0]:
             self.one_index_finger_up(hand)
 
