@@ -29,7 +29,7 @@ Ziel dieses Projekts ist es einen `Fanuc M-1iA` Roboter mittels Gesten steuern z
 2. Auf dem Rechner
    1. Kamera / Webcam verbinden
    2. `Python3 <= v11` installieren
-   3. `pip install -r requirements.txt` (oder `requirements.in`)
+   3. `pip install -r requirements/requirements.txt` (oder `requirements.in`)
    4. Eintragen der Roboter IP in `HOST_ADDR` (`main.py`)
 
 ## Usage
@@ -37,13 +37,13 @@ Zum Starten des Programms muss zuerst der `GESTURE_MOVER` auf dem Fanuc gestarte
 
 Um den Roboter zu bewegen, muss eine Hand im Bild erkannt werden und der Zeigefinger ausgestreckt werden. Die Spitze des Fingers dient dann zur Übersetzung der Position.
 
-Um den Roboter in die definierte Home-Position fahren zu lassen, müssen beide Fäuste ins Bild gehalten werden.
+Um den Roboter in die definierte Home-Position fahren zu lassen, müssen beide Fäuste (Handrücken zur Kamera) ins Bild gehalten werden.
 
 ## Konfiguration
 ### `main.py`
 Eintragung der Roboter IP: `HOST_ADDR`.
 
-Definition der Home-Position: `home_position`
+Definition der Home-Position: `HOME_POSITION`
 
 Definition der Limits des Roboters (zur Übersetzung von Pixel- zu Roboterkoordinaten): `TARGET_(X|Z|Y)_(MIN|MAX)`
 
@@ -62,5 +62,8 @@ Randbereich im Bild in px: `MARGIN`
 Betreuung und Beratung: *M.Sc. Thomas Franzke*
 
 ## Projekt Status
-Bei dem Projekt handelt es sich um einen POC. Eine Weiterentwicklung kann dennoch durch folgende Projekte gegeben sein.
- 
+Bei dem Projekt handelt es sich um einen POC.
+
+Derzeit ist nur die Gestenerkennung auf Bildebene implementiert. Eine dreidimensionale Erkennung ist ebenso möglich und die Basis dafür ist bereits gegeben. Allerdings wurde der z_Value auf einen fixen Wert gesetzt.
+
+Eine Weiterentwicklung kann dennoch durch nachfolgende Projekte gegeben sein.
