@@ -24,7 +24,7 @@ CONTROL_CODE	= 00000000 00000000;
    1:  UFRAME_NUM=2 ;
    2:  RUN GESTURE ;
    3:  LBL[1] ;
-   4:J PR[1] 60% CNT95    ;
+   4:J PR[1] 60% CNT10    ;
    5:  JMP LBL[1] ;
 /POS
 /END

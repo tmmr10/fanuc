@@ -32,7 +32,7 @@ Ziel dieses Projekts ist es einen `Fanuc M-1iA` Roboter mittels Gesten steuern z
    3. `pip install -r requirements/requirements.txt` (oder `requirements.in`)
    4. Eintragen der Roboter IP in `HOST_ADDR` (`main.py`)
 
-## Usage
+## Benutzung
 Zum Starten des Programms muss zuerst der `GESTURE_MOVER` auf dem Fanuc gestartet werden. Im Anschluss kann sich ein Client mittels des `main.py` python scripts verbinden und ein Fenster mit der verwendeten Kamera öffnet sich.
 
 Um den Roboter zu bewegen, muss eine Hand im Bild erkannt werden und der Zeigefinger ausgestreckt werden. Die Spitze des Fingers dient dann zur Übersetzung der Position.
@@ -50,7 +50,7 @@ Definition der Limits des Roboters (zur Übersetzung von Pixel- zu Roboterkoordi
 Randbereich im Bild in px: `MARGIN`
 
 ### `gesture.kl`
-
+Mittels `OFFSET` kann eine Abweichung um den genannten Wert in x, y und z-Richtung angegeben werden, der bei der Positionsüberprüfung verwendet wird. So wird die Position mit Wert `x`, `x + offset` und `x - offset` geprüft (analog `y` und `z`). Sollte eine Konstellation nicht erreichbar sein, so wird die Position nicht angefahren.  
 
 ## Authors and acknowledgment
 *Oliver Sedlbauer*
