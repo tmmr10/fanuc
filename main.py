@@ -2,10 +2,10 @@ import time
 from gesture.communicator import Communicator
 from gesture.detector import Detector
 
-HOST_ADDR = "10.215.255.151"  # IP address of the host
-TCP_PORT = 59002  # TCP port number
+HOST_ADDR = "10.215.255.151"
+TCP_PORT = 59002
 
-HOME_POSITION = (48, -45, -22)  # Home position coordinates for the robot
+HOME_POSITION = (48, -45, -22)
 # MARGIN is necessary because the detection at the screen edge doesn't work well
 MARGIN = 100
 
@@ -25,7 +25,8 @@ class RobotDetector(Detector):
         Initialize the RobotDetector.
 
         Args:
-            communicator (Communicator): The communicator object used for communication with the robot.
+            communicator (Communicator): 
+                The communicator object used for communication with the robot.
         """
         super().__init__()
         self.communicator = communicator
@@ -43,11 +44,16 @@ class RobotDetector(Detector):
 
         # X coord image (==y on target)
         normalized_x = (index_finger_x - MARGIN) / (self.width - 2 * MARGIN)
-        mapped_x = int(min(TARGET_Y_MAX, max(TARGET_Y_MIN, TARGET_Y_MIN + (TARGET_Y_MAX - TARGET_Y_MIN) * normalized_x)))
+        mapped_x = int(min(TARGET_Y_MAX,
+                           max(TARGET_Y_MIN, TARGET_Y_MIN
+                               + (TARGET_Y_MAX - TARGET_Y_MIN) * normalized_x)
+                           ))
 
         # y coord image (==z on target)
         normalized_y = (index_finger_y - MARGIN) / (self.height - 2 * MARGIN)
-        mapped_y = int(min(TARGET_Z_MAX, max(TARGET_Z_MIN, TARGET_Z_MIN + (TARGET_Z_MAX - TARGET_Z_MIN) * normalized_y)))
+        mapped_y = int(min(TARGET_Z_MAX,
+                           max(TARGET_Z_MIN, TARGET_Z_MIN
+                               + (TARGET_Z_MAX - TARGET_Z_MIN) * normalized_y)))
 
         # Fixed z Value: no depth detection activated
         z_Value = -22
@@ -60,8 +66,10 @@ class RobotDetector(Detector):
         Handle the case when two index fingers are raised.
 
         Args:
-            hand1 (dict): A dictionary containing information about the first hand.
-            hand2 (dict): A dictionary containing information about the second hand.
+            hand1 (dict): 
+                A dictionary containing information about the first hand.
+            hand2 (dict): 
+                A dictionary containing information about the second hand.
         """
         print("both_up")
         time.sleep(1)
@@ -71,8 +79,10 @@ class RobotDetector(Detector):
         Handle the case when all fingers of both hands are down.
 
         Args:
-            hand1 (dict): A dictionary containing information about the first hand.
-            hand2 (dict): A dictionary containing information about the second hand.
+            hand1 (dict): 
+                A dictionary containing information about the first hand.
+            hand2 (dict): 
+                A dictionary containing information about the second hand.
         """
         print("Go to home position")
         self.communicator.send_position(*HOME_POSITION)
@@ -100,7 +110,8 @@ class RobotDetector(Detector):
             threshold (float): The threshold for position comparison.
 
         Returns:
-            bool: True if the positions are within the threshold, False otherwise.
+            bool: 
+                True if the positions are within the threshold, False otherwise.
         """
         for i in range(3):
             if abs(sent_pos[i] - rec_pos[i]) > threshold:
@@ -110,17 +121,18 @@ class RobotDetector(Detector):
 
 def main():
     """
-    The main function that sets up the communication and runs the robot detector.
+    The main function that sets up the communication 
+    and runs the robot detector.
     """
-    communicator = Communicator(HOST_ADDR, TCP_PORT)  # Create a communicator object
-    communicator.connect_to_socket()  # Connect to the robot's socket
-    robot_detector = RobotDetector(communicator)  # Create a RobotDetector object
+    communicator = Communicator(HOST_ADDR, TCP_PORT)
+    communicator.connect_to_socket()
+    robot_detector = RobotDetector(communicator)
     try:
-        robot_detector.run()  # Run the robot detector
+        robot_detector.run()
 
     finally:
         print("Close")
-        communicator.close_connection()  # Close the connection with the robot
+        communicator.close_connection()
 
 
 if __name__ == "__main__":
