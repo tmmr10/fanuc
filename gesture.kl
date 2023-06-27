@@ -1,21 +1,9 @@
 PROGRAM gesture
---%STACKSIZE = 4000
 %NOLOCKGROUP
---%NOPAUSE=ERROR+COMMAND+TPENABLE
---%ENVIRONMENT uif
---%ENVIRONMENT sysdef
---%ENVIRONMENT memo
---%ENVIRONMENT kclop
---%ENVIRONMENT bynam
---%ENVIRONMENT fdev
---%ENVIRONMENT flbt
---%ENVIRONMENT REGOPE
---%INCLUDE klevccdf
---%INCLUDE klevkeys
---%INCLUDE klevkmsk
+%ALPHABETIZE
 -------------------------------------------------------------------------------
 CONST
-	Version		= '1.0.0'	
+	Version		= '1.1.0'	
 	--len_command	= 5             
     
     -- Funktion comands
@@ -42,7 +30,8 @@ CONST
 	S_STOP      = 999
 
 	-- Other
-	POS_REG   = 1
+	POS_REG     = 1
+	OFFSET      = 15.0    
     
 	
 VAR
@@ -67,21 +56,92 @@ VAR
 	xyzwpr_pos  : XYZWPR
 	
 -------------------------------------------------------------------------------
----- Section ROUTINES :
-----					move_to_pr	    calls TP Program to move robot to positions in registers
-----					fill_pos_ary    reads message string and writes contents to pos registers
+---- Section ROUTINES 
 -------------------------------------------------------------------------------
 
 ROUTINE g_cur_pos : XYZWPR
 VAR
 	pos : XYZWPR
 BEGIN
-	pos = CURPOS(0,0)		-- get current roboter position, for correct pos config data
-    pos.w = 30				-- static axis rotation values
-    pos.p = 0
-    pos.r = 180
+	-- get current roboter position, for correct pos config data
+	pos = CURPOS(0,0)
 	RETURN(pos)
 END g_cur_pos
+
+ROUTINE pos_2_str (pos : XYZWPR) : STRING
+VAR
+	tmp: STRING[24]
+	res : STRING[127]
+BEGIN
+	CNV_REAL_STR(pos.x, 1, 4, tmp)
+	res =  tmp + '|'
+	CNV_REAL_STR(pos.y, 1, 4, tmp)
+	res = res + tmp + '|'
+	CNV_REAL_STR(pos.z, 1, 4, tmp)
+	res = res + tmp
+	RETURN(res)
+END pos_2_str
+
+ROUTINE check_pos(pos: XYZWPR) : BOOLEAN
+VAR
+	status  : INTEGER
+	cur_pos : XYZWPR
+BEGIN
+	cur_pos = pos
+	CHECK_EPOS((cur_pos), $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
+
+	IF IN_RANGE((pos)) = FALSE THEN
+		RETURN(FALSE)
+	ENDIF
+
+	-- Check surrounding positions (CNT movement)
+	-- x-axis
+	cur_pos = pos
+	cur_pos.x = pos.x + OFFSET
+	CHECK_EPOS((cur_pos), $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
+
+	cur_pos.x = pos.x - OFFSET
+	CHECK_EPOS((cur_pos), $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
+
+	-- y-axis
+	cur_pos = pos
+	cur_pos.y = pos.y + OFFSET
+	CHECK_EPOS((cur_pos), $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
+
+	cur_pos.y = pos.y - OFFSET
+	CHECK_EPOS((cur_pos), $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
+
+	-- z-axis
+	cur_pos = pos
+	cur_pos.z = pos.z + OFFSET
+	CHECK_EPOS((cur_pos), $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
+
+	cur_pos.z = pos.z - OFFSET
+	CHECK_EPOS((cur_pos), $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
+
+	RETURN(TRUE)
+END check_pos
 
 ROUTINE parse_pos (msg : STRING) : XYZWPR
 VAR
@@ -96,6 +156,9 @@ BEGIN
 	cur_slice = ''
 	coord_index = 0
 	pos = g_cur_pos
+	pos.w = 30				-- static axis rotation values
+    pos.p = 0
+    pos.r = 180
 	FOR index = 1 TO STR_LEN(msg) DO
 		cur_char = SUB_STR(msg, index, 1)
 		
@@ -147,13 +210,15 @@ BEGIN
 			ENDIF
 			IF msg = GET_POS THEN
 				pos = g_cur_pos
-				RETURN('undefined')
+				RETURN(pos_2_str(pos))
 			ENDIF
 			RETURN(FAILURE + UNEXPECTED)
 		CASE (S_COORD) :
 			WRITE('Writing position to register...', cr)
 			pos = parse_pos(msg)
-			SET_POS_REG(POS_REG, pos, status)
+			IF check_pos((pos)) THEN
+				SET_POS_REG(POS_REG, pos, status)
+			ENDIF
 			global_state = S_ACCEPT
 			RETURN(ACK)
 		ELSE :
@@ -161,11 +226,14 @@ BEGIN
 	ENDSELECT
 
 END proc_command
+
+
 -------------------------------------------------------------------------------
 ---- Section Main Program
 ----					
 -------------------------------------------------------------------------------
 BEGIN
+	$UFRAME = $MNUFRAME[1,2]
 	WRITE ('Server start v', Version, cr)
 	running = TRUE
     global_state = S_START
