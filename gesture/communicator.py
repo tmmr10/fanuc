@@ -30,7 +30,8 @@ class Communicator:
                 time.sleep(1)
         
     def send_data(self, data: str, timeout=2):
-        self.sock.settimeout(timeout)  # Setze einen Timeout von 5 Sekunden
+        # Setze einen Timeout von 5 Sekunden
+        self.sock.settimeout(timeout)
         try:
             self.sock.send(data.encode())
             response = self.sock.recv(BUFFER_SIZE)
@@ -51,9 +52,7 @@ class Communicator:
         y= round(y, decimal_place)
         z= round(z, decimal_place)
         data= self.send_data("set_pos")
-        #print("Data set_pos. Recieved", data)
         data= self.send_data(f"{x} {y} {z};")
-        #print("Data send coords. Recieved", data)
         return data
     
     def get_position(self):
