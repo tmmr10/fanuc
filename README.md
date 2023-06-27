@@ -1,5 +1,25 @@
 # Studienprojekt Gestenerkennung Fanuc
 
+Hier eine kleine Anleitung, wie GIT verwendet werden kann:
+
+
+- Download des GIT-Clients: https://git-scm.com/downloads
+
+- Clonen des Repositories: Am Arbeitsrechner Konsole öffnen und in das entsprechende Verzeichnis wechseln. Mit "git clone https://studilab.if.haw-landshut.de/franzke/studienprojekt-gestenerkennung-fanuc.git" erstellen.
+
+- Repository vom Server auf den Rechner laden/aktualisieren mit: "git pull"
+
+- Repository am Server speichern mit: "./push.bat "Hier eine Beschreibung der Aenderungen" ". push.bat enthaelt die entsprechenden Befehle falls Interesse besteht.
+
+
+gez. Franzke
+
+---
+
+hier die offizielle Doku. Darf gerne geändert werden...
+
+
+
 
 
 ## Getting started
