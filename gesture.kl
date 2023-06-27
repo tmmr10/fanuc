@@ -1,19 +1,6 @@
 PROGRAM gesture
---%STACKSIZE = 4000
 %NOLOCKGROUP
 %ALPHABETIZE
---%NOPAUSE=ERROR+COMMAND+TPENABLE
---%ENVIRONMENT uif
---%ENVIRONMENT sysdef
---%ENVIRONMENT memo
---%ENVIRONMENT kclop
---%ENVIRONMENT bynam
---%ENVIRONMENT fdev
---%ENVIRONMENT flbt
---%ENVIRONMENT REGOPE
---%INCLUDE klevccdf
---%INCLUDE klevkeys
---%INCLUDE klevkmsk
 -------------------------------------------------------------------------------
 CONST
 	Version		= '1.1.0'	
@@ -43,7 +30,8 @@ CONST
 	S_STOP      = 999
 
 	-- Other
-	POS_REG   = 1
+	POS_REG     = 1
+	OFFSET      = 15.0    
     
 	
 VAR
@@ -68,16 +56,15 @@ VAR
 	xyzwpr_pos  : XYZWPR
 	
 -------------------------------------------------------------------------------
----- Section ROUTINES :
-----					move_to_pr	    calls TP Program to move robot to positions in registers
-----					fill_pos_ary    reads message string and writes contents to pos registers
+---- Section ROUTINES 
 -------------------------------------------------------------------------------
 
 ROUTINE g_cur_pos : XYZWPR
 VAR
 	pos : XYZWPR
 BEGIN
-	pos = CURPOS(0,0)		-- get current roboter position, for correct pos config data
+	-- get current roboter position, for correct pos config data
+	pos = CURPOS(0,0)
 	RETURN(pos)
 END g_cur_pos
 
@@ -96,66 +83,64 @@ BEGIN
 END pos_2_str
 
 ROUTINE check_pos(pos: XYZWPR) : BOOLEAN
-CONST
-	offset = 10.0
 VAR
 	status  : INTEGER
 	cur_pos : XYZWPR
 BEGIN
+	cur_pos = pos
+	CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
 
-	RETURN(IN_RANGE(pos))
-	-- cur_pos = pos
-	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
-	-- IF status <> 0 THEN
-	-- 	RETURN(FALSE)
-	-- ENDIF
+	IF IN_RANGE((pos)) = FALSE THEN
+		RETURN(FALSE)
+	ENDIF
 
+	-- Check surrounding positions (CNT movement)
+	-- x-axis
+	cur_pos = pos
+	cur_pos.x = pos.x + OFFSET
+	CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
 
+	cur_pos.x = pos.x - OFFSET
+	CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
 
-	-- -- Check surrounding positions (CNT movement)
-	-- -- x-axis
-	-- cur_pos = pos
-	-- cur_pos.x = pos.x + offset
-	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
-	-- IF status <> 0 THEN
-	-- 	RETURN(FALSE)
-	-- ENDIF
+	-- y-axis
+	cur_pos = pos
+	cur_pos.y = pos.y + OFFSET
+	CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
 
-	-- cur_pos.x = pos.x - offset
-	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
-	-- IF status <> 0 THEN
-	-- 	RETURN(FALSE)
-	-- ENDIF
+	cur_pos.y = pos.y - OFFSET
+	CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
 
-	-- -- y-axis
-	-- cur_pos = pos
-	-- cur_pos.y = pos.y + offset
-	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
-	-- IF status <> 0 THEN
-	-- 	RETURN(FALSE)
-	-- ENDIF
+	-- z-axis
+	cur_pos = pos
+	cur_pos.z = pos.z + OFFSET
+	CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
 
-	-- cur_pos.y = pos.y - offset
-	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
-	-- IF status <> 0 THEN
-	-- 	RETURN(FALSE)
-	-- ENDIF
+	cur_pos.z = pos.z - OFFSET
+	CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	IF status <> 0 THEN
+		RETURN(FALSE)
+	ENDIF
 
-	-- -- z-axis
-	-- cur_pos = pos
-	-- cur_pos.z = pos.z + offset
-	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
-	-- IF status <> 0 THEN
-	-- 	RETURN(FALSE)
-	-- ENDIF
-
-	-- cur_pos.z = pos.z - offset
-	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
-	-- IF status <> 0 THEN
-	-- 	RETURN(FALSE)
-	-- ENDIF
-
-	-- RETURN(TRUE)
+	RETURN(TRUE)
 END check_pos
 
 ROUTINE parse_pos (msg : STRING) : XYZWPR
@@ -241,6 +226,8 @@ BEGIN
 	ENDSELECT
 
 END proc_command
+
+
 -------------------------------------------------------------------------------
 ---- Section Main Program
 ----					
