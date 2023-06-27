@@ -1,4 +1,0 @@
-Threshold ist empfindlich -> automatische Kalibrierung
-			  -> statdessen verwenden von Kantendetektor??
-              
-Dokumentation schreiben
