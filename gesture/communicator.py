@@ -29,7 +29,9 @@ class Communicator:
             retry_count (int): The number of connection retries.
 
         Raises:
-            Exception: If the connection is refused after the specified number of retries.
+            Exception: 
+                If the connection is refused after the specified 
+                number of retries.
         """
         counter = 0
         while True:
@@ -53,7 +55,9 @@ class Communicator:
             timeout (int): The timeout duration for sending and receiving data.
 
         Returns:
-            bytes: The response received from the server, or None if an error occurred.
+            bytes:
+                The response received from the server, 
+                or None if an error occurred.
         """
         # Set a timeout of 2 seconds
         self.sock.settimeout(timeout)
@@ -83,7 +87,8 @@ class Communicator:
             x (float): The x-coordinate.
             y (float): The y-coordinate.
             z (float): The z-coordinate.
-            decimal_place (int): The number of decimal places to round the coordinates.
+            decimal_place (int): 
+                The number of decimal places to round the coordinates.
 
         Returns:
             bytes: The response received from the server.
