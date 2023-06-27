@@ -1,112 +1,66 @@
-# Studienprojekt Gestenerkennung Fanuc
+# Fanuc Gestensteuerung
 
-Hier eine kleine Anleitung, wie GIT verwendet werden kann:
-
-
-- Download des GIT-Clients: https://git-scm.com/downloads
-
-- Clonen des Repositories: Am Arbeitsrechner Konsole öffnen und in das entsprechende Verzeichnis wechseln. Mit "git clone https://studilab.if.haw-landshut.de/franzke/studienprojekt-gestenerkennung-fanuc.git" erstellen.
-
-- Repository vom Server auf den Rechner laden/aktualisieren mit: "git pull"
-
-- Repository am Server speichern mit: "./push.bat "Hier eine Beschreibung der Aenderungen" ". push.bat enthaelt die entsprechenden Befehle falls Interesse besteht.
-
-
-gez. Franzke
-
----
-
-hier die offizielle Doku. Darf gerne geändert werden...
-
-
-
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://studilab.if.haw-landshut.de/franzke/studienprojekt-gestenerkennung-fanuc.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://studilab.if.haw-landshut.de/franzke/studienprojekt-gestenerkennung-fanuc/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## Beschreibung
+Ziel dieses Projekts ist es einen `Fanuc M-1iA` Roboter mittels Gesten steuern zu können. Dafür wird mittels eines Python Programms die Position des Zeigefingers erkannt, in Roboterkoordinaten umgerechnet und an den Roboter über das Netzwerk (Socket) gesendet. Dieser schreibt die erhaltenen Positionen in ein Positionsregister und ließt daraus regelmäßig um seine Position dementsprechend anzupassen. Zudem wird die gesendete Position auf mögliche Positionskonflikte geprüft.
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+1. Auf dem Fanuc:
+    1. Kompilieren der Fanuc Programme `gesture.kl` und `gesture_mover.ls`
+       > Dafür wird der Compiler von Roboguide benötigt
+       >
+       > Im Labor ist dies der Windows 7 Rechner (PW `cunaf`)
+       >
+       > Dort befindet sich auf dem Desktop `C:\Users\fanuc\Desktop\KarelCompiler` mit dem Karel-Compiler `ktrans.exe` und dem TP-Compiler `maketp.exe`
+       > (`i:` ist im folgenden der verwendete USB-Stick)
+       > ```sh
+       > ktrans.exe i:gesture.kl i:gesture.pc
+       > maketp.exe i:gesture_mover.ls i:gesture_mover.tp
+    2. Kopieren der kompilierten `gesture.pc` und `gesture_mover.tp` auf einen USB-Stick
+    3. Einstecken des USB-Sticks im TeachPendent des Fanucs, folgendes dann am TeachPendant
+    4. Anmelden als Administrator
+       > `Help` > `Login (F4)` > `Admin` auswählen > `Login (F2)` > Passwort eingeben (000) > `Enter` 
+    5. Auswählen des USB-Sticks
+       > `Menu` > `File (7)` > `Util (F5)` > `Set Device` > `1 USB ON TP (UT1:)`
+    6. Kopieren der Programme
+       > `7 *PC (all Karel p-code)` bzw. `8 *TP (all TP programs)` > Eintrag / Datei auswählen > `Next` > `Copy (F2)` > `To Device:` `Choice (F4)` > `6 Mem Device (MD:)` > `Do Copy (F1)` > (Overwrite: `Yes (F4)`)
+    7. Starten der Programme
+       > ...
+    8. Identifizieren der Ip Adresse
+2. Auf dem Rechner
+   1. Kamera / Webcam verbinden
+   2. `Python3 <= v11` installieren
+   3. `pip install -r requirements.txt` (oder `requirements.in`)
+   4. Eintragen der Roboter IP in `HOST_ADDR` (`main.py`)
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Zum Starten des Programms muss zuerst der `GESTURE_MOVER` auf dem Fanuc gestartet werden. Im Anschluss kann sich ein Client mittels des `main.py` python scripts verbinden und ein Fenster mit der verwendeten Kamera öffnet sich.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Um den Roboter zu bewegen, muss eine Hand im Bild erkannt werden und der Zeigefinger ausgestreckt werden. Die Spitze des Fingers dient dann zur Übersetzung der Position.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Um den Roboter in die definierte Home-Position fahren zu lassen, müssen beide Fäuste ins Bild gehalten werden.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Konfiguration
+### `main.py`
+Eintragung der Roboter IP: `HOST_ADDR`.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Definition der Home-Position: `home_position`
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+Definition der Limits des Roboters (zur Übersetzung von Pixel- zu Roboterkoordinaten): `TARGET_(X|Z|Y)_(MIN|MAX)`
+
+Randbereich im Bild in px: `MARGIN`
+
+### `gesture.kl`
+
 
 ## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+*Oliver Sedlbauer*
 
-## License
-For open source projects, say how it is licensed.
+*Tom Maier*
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+*Janis Reinelt*
+
+Betreuung und Beratung: *M.Sc. Thomas Franzke*
+
+## Projekt Status
+Bei dem Projekt handelt es sich um einen POC. Eine Weiterentwicklung kann dennoch durch folgende Projekte gegeben sein.
+ 
