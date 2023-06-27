@@ -72,7 +72,6 @@ class RobotDetector(Detector):
                 A dictionary containing information about the second hand.
         """
         print("both_up")
-        time.sleep(1)
 
     def two_all_fingers_down(self, hand1, hand2):
         """
