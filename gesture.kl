@@ -96,15 +96,66 @@ BEGIN
 END pos_2_str
 
 ROUTINE check_pos(pos: XYZWPR) : BOOLEAN
+CONST
+	offset = 10.0
 VAR
-	status : INTEGER
+	status  : INTEGER
+	cur_pos : XYZWPR
 BEGIN
-	CHECK_EPOS(pos, $UFRAME, $UTOOL, status)
-	IF status = 0 THEN
-		RETURN(TRUE)
-	ELSE
-		RETURN(FALSE)
-	ENDIF
+
+	RETURN(IN_RANGE(pos))
+	-- cur_pos = pos
+	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	-- IF status <> 0 THEN
+	-- 	RETURN(FALSE)
+	-- ENDIF
+
+
+
+	-- -- Check surrounding positions (CNT movement)
+	-- -- x-axis
+	-- cur_pos = pos
+	-- cur_pos.x = pos.x + offset
+	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	-- IF status <> 0 THEN
+	-- 	RETURN(FALSE)
+	-- ENDIF
+
+	-- cur_pos.x = pos.x - offset
+	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	-- IF status <> 0 THEN
+	-- 	RETURN(FALSE)
+	-- ENDIF
+
+	-- -- y-axis
+	-- cur_pos = pos
+	-- cur_pos.y = pos.y + offset
+	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	-- IF status <> 0 THEN
+	-- 	RETURN(FALSE)
+	-- ENDIF
+
+	-- cur_pos.y = pos.y - offset
+	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	-- IF status <> 0 THEN
+	-- 	RETURN(FALSE)
+	-- ENDIF
+
+	-- -- z-axis
+	-- cur_pos = pos
+	-- cur_pos.z = pos.z + offset
+	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	-- IF status <> 0 THEN
+	-- 	RETURN(FALSE)
+	-- ENDIF
+
+	-- cur_pos.z = pos.z - offset
+	-- CHECK_EPOS(cur_pos, $UFRAME, $UTOOL, status)
+	-- IF status <> 0 THEN
+	-- 	RETURN(FALSE)
+	-- ENDIF
+
+	-- RETURN(TRUE)
 END check_pos
 
 ROUTINE parse_pos (msg : STRING) : XYZWPR
@@ -180,7 +231,7 @@ BEGIN
 		CASE (S_COORD) :
 			WRITE('Writing position to register...', cr)
 			pos = parse_pos(msg)
-			IF check_pos(pos) THEN
+			IF check_pos((pos)) THEN
 				SET_POS_REG(POS_REG, pos, status)
 			ENDIF
 			global_state = S_ACCEPT

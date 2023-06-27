@@ -71,20 +71,34 @@ When you're ready to make this README your own, just edit this file and use the 
 ## Suggestions for a good README
 Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+## Fanuc Gestensteuerung
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## Beschreibung
+Ziel dieses Projekts ist es einen `Fanuc M-1iA` Roboter mittels Gesten steuern zu können. Dafür wird mittels eines Python Programms die Position des Zeigefingers erkannt, in Roboterkoordinaten umgerechnet und an den Roboter über das Netzwerk (Socket) gesendet. Dieser schreibt die erhaltenen Positionen in ein Positionsregister und ließt daraus regelmäßig um seine Position dementsprechend anzupassen. Zudem wird die gesendete Position auf Limitkonflikte geprüft.
 
 ## Visuals
 Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+1. Auf dem Fanuc:
+    1. Kompilieren des Karel Programms `gesture.kl`
+       > Dafür wird der Compiler von Roboguide benötigt
+       >
+       > Im Labor ist dies der Windows 7 Rechner (PW `cunaf`)
+       >
+       > Dort befindet sich auf dem Desktop `C:\Users\fanuc\Desktop\KarelCompiler` mit dem Karel-Compiler `ktrans.exe`
+       > Mittels `ktrans.exe i:\gesture.kl i:\gesture.pc` kann dann das kl Programm kompiliert werden
+       > (`i:` ist dabei der verwendete USB-Stick)
+    3. Kopieren des kompilierten `gesture.pc` und des `KarelMover2.tp` auf einen USB-Stick
+    4. Einstecken des USB-Sticks im TeachPendent des Fanucs, folgendes dann am TeachPendant
+    5. Anmelden als Administrator
+       > `Help` > `Login (F4)` > `Admin` auswählen > `Login (F2)` > Passwort eingeben (000) > `Enter` 
+    6. Auswählen des USB-Sticks
+       > `Menu` > `File (7)` > `Util (F5)` > `Set Device` > `1 USB ON TP (UT1:)`
+    7. Kopieren der Programme
+       > `7 *PC (all Karel p-code)` bzw. `8 *TP (all TP programs)` > Eintrag / Datei auswählen > `Next` > `Copy (F2)` > `To Device:` `Choice (F4)` > `6 Mem Device (MD:)` > `Do Copy (F1)` > (Overwrite: `Yes (F4)`)
+    8. Starten der Programme
+       > ...
 
 ## Usage
 Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
