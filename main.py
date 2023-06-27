@@ -5,7 +5,7 @@ from gesture.detector import Detector
 HOST_ADDR="10.215.255.151"
 TCP_PORT=59002
 
-home_position=(65, -96, -22)
+home_position=(48, -45, -22)
 # margin is necessary because the detection at the screen edge does not work well
 margin = 100
 
@@ -13,14 +13,6 @@ target_y_min = -115
 target_y_max = 119
 target_z_min = -44
 target_z_max = 51
-
-
-# Ungefähre z erkennung von bild( ist abhängig von Kamera)
-z_detect_min =-150
-z_detect_max= 0
-
-target_x_min=-146
-target_x_max= 0
 
 class RobotDetector(Detector):
     def __init__(self, communicator):
@@ -41,10 +33,8 @@ class RobotDetector(Detector):
         normalized_y = (index_finger_y - margin) / (self.height - 2 * margin)
         mapped_y = int(min(target_z_max, max(target_z_min, target_z_min + (target_z_max - target_z_min) * normalized_y)))
         
-        normalized_z = (index_finger_z - z_detect_min) / (z_detect_max - z_detect_min)
-        zVal = int(min(target_x_max, max(target_x_min, target_x_min + (target_x_max - target_x_min) * normalized_z)))
-        print( f"mapped x : {mapped_x} , mapped y: {mapped_y},z: {index_finger_z} mapped z:{zVal}")
-
+        zVal= -22
+        print(f"x: {mapped_x}, y: {zVal} z: {mapped_y}")
         self.communicator.send_position(mapped_x, zVal, mapped_y)
         time.sleep(0.05)
 

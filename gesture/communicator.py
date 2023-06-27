@@ -9,7 +9,7 @@ class Communicator:
         self.host_addr=host_addr
         self.tcp_port=tcp_port
         
-    def connect_to_socket(self, retry_count=10):
+    def connect_to_socket(self, retry_count=15):
         """
         Args:
             retry_count (int): Anzahl retrys connection

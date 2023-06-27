@@ -24,7 +24,7 @@ class Detector:
         self.height=720
         self.cap=cap
         self.detector = HandDetector(detectionCon=0.8, maxHands=2)
-        self.is_running = False
+        self.is_running = True
         self.hands=None
         self.hands_lock = threading.Lock()
 
@@ -52,7 +52,6 @@ class Detector:
         webcam_thread.join()
 
     def _detect_gesture(self):
-        self.is_running = True
         try:            
             while self.is_running:
                 with self.hands_lock:
